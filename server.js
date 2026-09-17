@@ -1,8 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const twilio = require('twilio');
-const { postToX } = require('./lib/postToX');
-const { postToThreads } = require('./lib/postToThreads');
+const { postToX } = require('./postToX');
+const { postToThreads } = require('./postToThreads');
 
 const app = express();
 app.use(express.urlencoded({ extended: false }));
