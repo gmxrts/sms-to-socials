@@ -5,6 +5,7 @@ const { postToX } = require('./postToX');
 const { postToThreads } = require('./postToThreads');
 
 const app = express();
+app.set('trust proxy', true);
 app.use(express.urlencoded({ extended: false }));
 
 const ALLOWED_SENDERS = (process.env.ALLOWED_SENDERS || '')
@@ -13,11 +14,15 @@ const ALLOWED_SENDERS = (process.env.ALLOWED_SENDERS || '')
   .filter(Boolean);
 
 app.post('/sms', async (req, res) => {
+  console.log('Incoming request from:', req.body.From, '| Body:', req.body.Body);
+
   const twiml = new twilio.twiml.MessagingResponse();
 
   // 1. Verify the request actually came from Twilio, not a spoofed POST.
   const signature = req.headers['x-twilio-signature'];
   const url = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+  console.log('Validating against URL:', url);
+
   const validRequest = twilio.validateRequest(
     process.env.TWILIO_AUTH_TOKEN,
     signature,
@@ -25,7 +30,10 @@ app.post('/sms', async (req, res) => {
     req.body
   );
 
+  console.log('Signature valid:', validRequest);
+
   if (!validRequest) {
+    console.log('Rejected: invalid Twilio signature');
     return res.status(403).send('Invalid Twilio signature');
   }
 
